@@ -1,0 +1,5 @@
+USER_GRPC : "localhost:50051"
+STORE_GRPC : "localhost:50052"
+NOTIFICATION_GRPC : "localhost:50053"
+IMAGE_GRPC : "localhost:50055"
+PRODUCT_GRPC : "localhost:50056"
