@@ -50,6 +50,11 @@ func main() {
 }
 
 func echoHandler(w http.ResponseWriter, r *http.Request) {
+	//add Connection upgrade header
+	log.Printf("Header: %+v", r.Header)
+	r.Header.Add("Connection", "upgrade")
+	r.Header.Add("Upgrade", "websocket")
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("Failed to upgrade to WebSocket: %v", err)
