@@ -132,7 +132,7 @@ func consumeKafka() {
 	conf := ReadConfig()
 
 	topic := "sales"
-	conf["group.id"] = "go-group-1"
+	conf["group.id"] = "websocket-group-1"
 	conf["auto.offset.reset"] = "latest"
 
 	consumer, err := kafka.NewConsumer(&conf)
