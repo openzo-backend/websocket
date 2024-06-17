@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package notification;
+option go_package = "github.com/tanush-128/openzo_backend/notification/internal/pb";
+
+
+service NotificationService {
+ rpc SendNotification (Notification) returns (Status) {};
+ rpc SendData (Data) returns (Status) {};
+  // rpc GetUser (UserRequest) returns (User) {};
+  // rpc GetUserWithJWT (Token) returns (User) {};
+  // Add more RPC methods for other user operations
+//   rpc GetUserWithJWT (Token) returns (User) {};
+  // Add more RPC methods for other user operations
+}
+
+message Data{
+  map <string, string> data = 1;
+  string token = 2;
+}
+
+message Status {
+  string status = 1;
+}
+
+message Notification {
+  string title = 1;
+  string body = 2;
+  string imageURL = 3;
+  string actionURL = 4;
+  string token = 5;
+}
+
+// To generate the go code from the proto file, run the following command
+// protoc --go_out=. --go_opt=paths=source_relative \
+//     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+//     user.proto

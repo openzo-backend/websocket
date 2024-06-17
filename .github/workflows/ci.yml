@@ -1,0 +1,58 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get Git Commit Hash
+        id: git_hash
+        run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+
+      - name: Increment Version Number
+        id: increment_version
+        run: |
+          VERSION_FILE="version.txt"
+          if [ -f "$VERSION_FILE" ]; then
+            VERSION=$(cat $VERSION_FILE)
+            MAJOR=$(echo $VERSION | cut -d. -f1)
+            MINOR=$(echo $VERSION | cut -d. -f2)
+            PATCH=$(echo $VERSION | cut -d. -f3)
+            PATCH=$((PATCH+1))
+            echo "$MAJOR.$MINOR.$PATCH" > $VERSION_FILE
+          else
+            echo "0.0.1" > $VERSION_FILE
+          fi
+          echo "::set-output name=version::$(cat $VERSION_FILE)"
+
+      - name: Build Docker image
+        run: |
+          docker build -t tanush128/websocket:${{ steps.increment_version.outputs.version }}-${{ steps.git_hash.outputs.hash }} .
+
+      - name: Log in to Docker registry
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+        # Continue with pushing the image and committing changes to the configuration repository
+
+      - name: Push to Dockerhub
+        run: |
+          docker push tanush128/websocket:${{ steps.increment_version.outputs.version }}-${{ steps.git_hash.outputs.hash }}
+
+      - name: Commit changes to configuration repository
+        run: |
+          git config --global user.email "tanush@myyahoo.com"
+          git config --global user.name "tanush-128"
+          git clone https://tanush-128:${{secrets.NEW_SECRET}}@github.com/tanush-128/openzo_backend_cd.git
+          cd  openzo_backend_cd/websocket
+          sed -i 's+tanush128/websocket.*+tanush128/websocket:${{ steps.increment_version.outputs.version }}-${{ steps.git_hash.outputs.hash }}+g' deployment.yml
+          git add .
+          git commit -m "Update Docker image tag"
+          git push origin main
